@@ -46,16 +46,14 @@ public class PopulateDB {
   }
 
   public void addUsers() {
-    for (int i = 1, j = 100; i <= 1000; i++, j += 1) {
+    for (int i = 1; i <= 1000; i++) {
       int finalI = i;
-      int finalJ = j;
       executor.submit(() -> {
         try {
           users.addUser(
               User.builder()
                   .name("User_" + finalI)
                   .gold(0)
-                  .clanId(finalJ / 100)
                   .build());
           log.info("Add User: " + users.getUser(finalI).orElseThrow());
         } catch (SQLException | InterruptedException e) {
@@ -254,7 +252,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           Optional<User> user = users.getUser(6);
           User userGoldUpdate = user.orElseThrow();
@@ -264,7 +263,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           Optional<User> user = users.getUser(7);
           User userGoldUpdate = user.orElseThrow();
@@ -274,7 +274,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           Optional<User> user = users.getUser(8);
           User userGoldUpdate = user.orElseThrow();
@@ -284,7 +285,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           Optional<User> user = users.getUser(9);
           User userGoldUpdate = user.orElseThrow();
@@ -294,7 +296,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           Optional<User> user = users.getUser(10);
           User userGoldUpdate = user.orElseThrow();
@@ -355,7 +358,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           userAddGoldService.addGoldToClan(6, 3, 1);
           log.info("Add User: " + users.getUser(6).orElseThrow() +
@@ -363,7 +367,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           userAddGoldService.addGoldToClan(7, 4, 1);
           log.info("Add User: " + users.getUser(7).orElseThrow() +
@@ -371,7 +376,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           userAddGoldService.addGoldToClan(8, 5, 1);
           log.info("Add User: " + users.getUser(8).orElseThrow() +
@@ -379,7 +385,8 @@ public class PopulateDB {
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
-      });executor.submit(() -> {
+      });
+      executor.submit(() -> {
         try {
           userAddGoldService.addGoldToClan(9, 6, 1);
           log.info("Add User: " + users.getUser(9).orElseThrow() +

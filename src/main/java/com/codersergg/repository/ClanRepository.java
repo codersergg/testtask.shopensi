@@ -1,7 +1,7 @@
 package com.codersergg.repository;
 
 import com.codersergg.db.ConnectionPool;
-import com.codersergg.model.ApplicationLock;
+import com.codersergg.lock.LockService;
 import com.codersergg.model.Clan;
 import com.codersergg.service.ClanService;
 import java.sql.Connection;
@@ -14,12 +14,12 @@ import org.postgresql.util.PSQLException;
 public class ClanRepository implements ClanService {
 
   private final ConnectionPool connectionPool;
-  private final ApplicationLock applicationLock;
+  private final LockService lockService;
   private volatile Connection connection;
 
-  public ClanRepository(ConnectionPool connectionPool, ApplicationLock applicationLock) {
+  public ClanRepository(ConnectionPool connectionPool, LockService lockService) {
     this.connectionPool = connectionPool;
-    this.applicationLock = applicationLock;
+    this.lockService = lockService;
   }
 
   @Override
@@ -80,8 +80,9 @@ public class ClanRepository implements ClanService {
    * @throws InterruptedException
    */
   @Override
-  public synchronized void changeClansGold(long clanId, int gold) throws SQLException, InterruptedException {
-    synchronized (applicationLock.getLock(getClan(clanId).orElseThrow())) {
+  public synchronized void changeClansGold(long clanId, int gold)
+      throws SQLException, InterruptedException {
+    synchronized (lockService.getLock(getClan(clanId).orElseThrow())) {
       Clan clan = getClan(clanId).orElseThrow();
       goldSufficiencyCheck(clan, gold);
       updateGold(clan, gold);

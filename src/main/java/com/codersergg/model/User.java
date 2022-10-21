@@ -10,7 +10,6 @@ public class User {
   private long id;     // id user
   private String name; // имя user
   private int gold;    // текущее количество золота user
-  private long clanId; // имя клана
 
   @Override
   public boolean equals(Object o) {

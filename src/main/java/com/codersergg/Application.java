@@ -3,7 +3,8 @@ package com.codersergg;
 import com.codersergg.db.ConnectionPool;
 import com.codersergg.db.JdbcConnectionPool;
 import com.codersergg.executor.Executor;
-import com.codersergg.model.ApplicationLock;
+import com.codersergg.lock.LockService;
+import com.codersergg.lock.LockServiceImpl;
 import com.codersergg.repository.ClanRepository;
 import com.codersergg.repository.UserRepository;
 import com.codersergg.service.ClanService;
@@ -41,7 +42,7 @@ public class Application {
   }
 
   public static void main(String[] args) throws InterruptedException, SQLException {
-    ApplicationLock lock = new ApplicationLock();
+    LockService lock = new LockServiceImpl();
     ClanService clans = new ClanRepository(connectionPool, lock);
     UserService users = new UserRepository(connectionPool, lock);
     UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users);

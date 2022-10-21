@@ -47,7 +47,6 @@ public class TableManagementUtil {
         "(id BIGSERIAL primary key, " +
         "name VARCHAR (20) NOT NULL, " +
         "gold int4, " +
-        "clanId int8, " +
         "CONSTRAINT user_constraint UNIQUE (id, name))";
     connection = connectionPool.getConnection();
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

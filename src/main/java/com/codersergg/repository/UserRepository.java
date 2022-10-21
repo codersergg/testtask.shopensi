@@ -1,7 +1,7 @@
 package com.codersergg.repository;
 
 import com.codersergg.db.ConnectionPool;
-import com.codersergg.model.ApplicationLock;
+import com.codersergg.lock.LockService;
 import com.codersergg.model.User;
 import com.codersergg.service.UserService;
 import java.sql.Connection;
@@ -16,17 +16,17 @@ import org.postgresql.util.PSQLException;
 public class UserRepository implements UserService {
 
   private final ConnectionPool connectionPool;
-  private final ApplicationLock applicationLock;
+  private final LockService lockService;
   private volatile Connection connection;
 
-  public UserRepository(ConnectionPool connectionPool, ApplicationLock applicationLock) {
+  public UserRepository(ConnectionPool connectionPool, LockService lockService) {
     this.connectionPool = connectionPool;
-    this.applicationLock = applicationLock;
+    this.lockService = lockService;
   }
 
   @Override
   public Optional<User> getUser(long id) throws SQLException, InterruptedException {
-    String query = "SELECT id, name, gold, clanId FROM user_player WHERE id = ?";
+    String query = "SELECT id, name, gold FROM user_player WHERE id = ?";
     connection = connectionPool.getConnection();
 
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -40,7 +40,6 @@ public class UserRepository implements UserService {
               .id(resultSet.getLong("id"))
               .name(resultSet.getString("name"))
               .gold(resultSet.getInt("gold"))
-              .clanId(resultSet.getInt("clanId"))
               .build();
           return Optional.of(result);
         } else {
@@ -54,13 +53,12 @@ public class UserRepository implements UserService {
 
   @Override
   public void addUser(User user) throws SQLException, InterruptedException {
-    String query = "INSERT INTO user_player (name, gold, clanId) VALUES (?, ?, ?)";
+    String query = "INSERT INTO user_player (name, gold) VALUES (?, ?)";
     connection = connectionPool.getConnection();
 
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
       preparedStatement.setString(1, user.getName());
       preparedStatement.setInt(2, user.getGold());
-      preparedStatement.setLong(3, user.getClanId());
       try {
         preparedStatement.execute();
         connectionPool.releaseConnection(connection);
@@ -79,13 +77,13 @@ public class UserRepository implements UserService {
    * Метод изменения количества золота пользователя
    *
    * @param userId
-   * @param gold количество золота, подлежащего внесению в БД
+   * @param gold   количество золота, подлежащего внесению в БД
    * @throws SQLException
    * @throws InterruptedException
    */
   @Override
   public void changeUsersGold(long userId, int gold) throws SQLException, InterruptedException {
-    synchronized (applicationLock.getLock(getUser(userId).orElseThrow())) {
+    synchronized (lockService.getLock(getUser(userId).orElseThrow())) {
       User user = getUser(userId).orElseThrow();
       goldSufficiencyCheck(user, gold);
       updateGold(user, gold);
@@ -102,7 +100,7 @@ public class UserRepository implements UserService {
    */
   @Override
   public void populateUsersGold(User userGoldUpdate) throws SQLException, InterruptedException {
-    synchronized (applicationLock.getLock(userGoldUpdate)) {
+    synchronized (lockService.getLock(userGoldUpdate)) {
       User user = getUser(userGoldUpdate.getId()).orElseThrow();
       int newGold = user.getGold() + userGoldUpdate.getGold();
       goldSufficiencyCheck(user, newGold);
