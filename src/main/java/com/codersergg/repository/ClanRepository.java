@@ -1,6 +1,7 @@
 package com.codersergg.repository;
 
 import com.codersergg.db.ConnectionPool;
+import com.codersergg.model.ApplicationLock;
 import com.codersergg.model.Clan;
 import com.codersergg.service.ClanService;
 import java.sql.Connection;
@@ -13,16 +14,19 @@ import org.postgresql.util.PSQLException;
 public class ClanRepository implements ClanService {
 
   private final ConnectionPool connectionPool;
+  private final ApplicationLock applicationLock;
+  private volatile Connection connection;
 
-  public ClanRepository(ConnectionPool connectionPool) {
+  public ClanRepository(ConnectionPool connectionPool, ApplicationLock applicationLock) {
     this.connectionPool = connectionPool;
+    this.applicationLock = applicationLock;
   }
 
   @Override
   public Optional<Clan> getClan(long id) throws SQLException, InterruptedException {
     String query = "SELECT id, name, gold FROM clan WHERE id = ?";
+    connection = connectionPool.getConnection();
 
-    Connection connection = connectionPool.getConnection();
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
       ResultSet resultSet;
       preparedStatement.setLong(1, id);
@@ -48,8 +52,8 @@ public class ClanRepository implements ClanService {
 
   public void addClan(Clan clan) throws SQLException, InterruptedException {
     String query = "INSERT INTO clan (name, gold) VALUES (?, ?)";
+    connection = connectionPool.getConnection();
 
-    Connection connection = connectionPool.getConnection();
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
       preparedStatement.setString(1, clan.getName());
       preparedStatement.setInt(2, clan.getGold());
@@ -67,22 +71,40 @@ public class ClanRepository implements ClanService {
     }
   }
 
-  public void updateClan(Clan clan) throws SQLException, InterruptedException {
-    String query = "INSERT INTO clan (id, name, gold) VALUES (?, ?, ?)";
+  /**
+   * Метод изменения количества золота клана
+   *
+   * @param clanId
+   * @param gold   количество золота, подлежащего внесению в БД
+   * @throws SQLException
+   * @throws InterruptedException
+   */
+  @Override
+  public synchronized void changeClansGold(long clanId, int gold) throws SQLException, InterruptedException {
+    synchronized (applicationLock.getLock(getClan(clanId).orElseThrow())) {
+      Clan clan = getClan(clanId).orElseThrow();
+      goldSufficiencyCheck(clan, gold);
+      updateGold(clan, gold);
+    }
+  }
 
-    Connection connection = connectionPool.getConnection();
+  private void goldSufficiencyCheck(Clan clan, int newGold) {
+    if (newGold < 0) {
+      throw new IllegalStateException(
+          String.format("The clan %s does not have enough gold for this action", clan));
+    }
+  }
+
+  public void updateGold(Clan clan, int newGold) throws SQLException, InterruptedException {
+    connection = connectionPool.getConnection();
+    String query = "UPDATE clan SET gold = ? WHERE id = ?";
+
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-      preparedStatement.setLong(1, clan.getId());
-      preparedStatement.setString(2, clan.getName());
-      preparedStatement.setInt(3, clan.getGold());
+      preparedStatement.setInt(1, newGold);
+      preparedStatement.setLong(2, clan.getId());
       try {
-        preparedStatement.execute();
+        preparedStatement.executeUpdate();
         connectionPool.releaseConnection(connection);
-      } catch (PSQLException e) {
-        throw new RuntimeException(e);
-      }
-      try {
-        getClan(clan.getId());
       } catch (PSQLException e) {
         throw new RuntimeException(e);
       }

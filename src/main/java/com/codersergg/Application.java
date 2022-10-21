@@ -2,23 +2,23 @@ package com.codersergg;
 
 import com.codersergg.db.ConnectionPool;
 import com.codersergg.db.JdbcConnectionPool;
-import com.codersergg.model.Clan;
-import com.codersergg.model.User;
+import com.codersergg.executor.Executor;
+import com.codersergg.model.ApplicationLock;
 import com.codersergg.repository.ClanRepository;
 import com.codersergg.repository.UserRepository;
 import com.codersergg.service.ClanService;
+import com.codersergg.service.UserAddGoldService;
 import com.codersergg.service.UserService;
+import com.codersergg.utils.PopulateDB;
 import com.codersergg.utils.TableManagementUtil;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lombok.extern.java.Log;
 
 @Log
 public class Application {
 
   public static ConnectionPool connectionPool;
-  public static ExecutorService executor;
 
   static {
     try {
@@ -34,56 +34,27 @@ public class Application {
       log.info("Drop Table User");
       util.createTablesUser();
       log.info("Create Table User");
-      executor = Executors.newFixedThreadPool(20);
+
     } catch (SQLException | InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException, SQLException {
+    ApplicationLock lock = new ApplicationLock();
+    ClanService clans = new ClanRepository(connectionPool, lock);
+    UserService users = new UserRepository(connectionPool, lock);
+    UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users);
+    ExecutorService executor = new Executor().getExecutorService();
+    PopulateDB populateDB = new PopulateDB(executor, users, clans, userAddGoldService);
 
-    ClanService clanService = new ClanRepository(connectionPool);
-    saveClans(clanService);
+    populateDB.addClans();
+    populateDB.addUsers();
+    Thread.sleep(10000);
+    populateDB.addGoldToUser();
+    populateDB.updateGoldToUser();
+    populateDB.addUsersGoldToClan();
 
-    UserService userService = new UserRepository(connectionPool);
-    saveUsers(userService);
   }
 
-  private static void saveClans(ClanService clanService) {
-    for (int i = 1; i <= 10; i++) {
-      int finalI = i;
-      executor.submit(() -> {
-        try {
-          clanService.addClan(
-              Clan.builder()
-                  .name("Clan_" + finalI)
-                  .gold(0)
-                  .build());
-          log.info("Set Clan: " + clanService.getClan(finalI).orElseThrow());
-        } catch (SQLException | InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-    }
-  }
-
-  private static void saveUsers(UserService userService) {
-    for (int i = 1, j = 100; i <= 1000; i++, j += 1) {
-      int finalI = i;
-      int finalJ = j;
-      executor.submit(() -> {
-        try {
-          userService.addUser(
-              User.builder()
-                  .name("User_" + finalI)
-                  .gold(0)
-                  .clanId(finalJ / 100)
-                  .build());
-          log.info("Set User: " + userService.getUser(finalI).orElseThrow());
-        } catch (SQLException | InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-    }
-  }
 }

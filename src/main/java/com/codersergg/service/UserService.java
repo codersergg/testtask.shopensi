@@ -9,4 +9,8 @@ public interface UserService {
   Optional<User> getUser(long userId) throws SQLException, InterruptedException;
 
   void addUser(User user) throws SQLException, InterruptedException;
+
+  void populateUsersGold(User userGoldUpdate) throws SQLException, InterruptedException;
+
+  void changeUsersGold(long userId, int gold) throws SQLException, InterruptedException;
 }
