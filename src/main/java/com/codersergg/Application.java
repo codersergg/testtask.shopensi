@@ -5,6 +5,8 @@ import com.codersergg.db.JdbcConnectionPool;
 import com.codersergg.executor.Executor;
 import com.codersergg.lock.LockService;
 import com.codersergg.lock.LockServiceImpl;
+import com.codersergg.monitoring.InMemoryMonitoring;
+import com.codersergg.monitoring.Monitoring;
 import com.codersergg.repository.ClanRepository;
 import com.codersergg.repository.TaskRepository;
 import com.codersergg.repository.UserRepository;
@@ -48,15 +50,18 @@ public class Application {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     LockService lock = new LockServiceImpl();
     UserService users = new UserRepository(connectionPool, lock);
     ClanService clans = new ClanRepository(connectionPool, lock);
     TaskRepository taskRepository = new TaskRepository(connectionPool, lock);
-    TaskService tasks = new TaskService(lock, clans, taskRepository);
 
-    UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users);
-    DeductGoldService deductGoldService = new DeductGoldService(lock, clans);
+    Monitoring monitoring = new InMemoryMonitoring();
+
+    TaskService tasks = new TaskService(lock, clans, taskRepository, monitoring);
+    UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users, monitoring);
+    DeductGoldService deductGoldService = new DeductGoldService(lock, clans, monitoring);
+
     ExecutorService executor = new Executor().getExecutorService();
     PopulateDB populateDB = new PopulateDB(executor, users, clans, tasks, userAddGoldService,
         deductGoldService);
@@ -69,6 +74,11 @@ public class Application {
     // Запуск имитации действий пользователей
     populateDB.addGoldToUser();
     populateDB.addAndDeductGold();
+
+    Thread.sleep(4 * 60 * 1000);
+    monitoring.getMetricMap().forEach(
+        (id, metric) -> System.out.println("id metric: " + id + " metric: " + metric.toString()));
+
   }
 
 }

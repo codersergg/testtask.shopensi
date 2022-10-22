@@ -3,11 +3,13 @@ package com.codersergg.repository;
 import com.codersergg.db.ConnectionPool;
 import com.codersergg.lock.LockService;
 import com.codersergg.model.Clan;
+import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.service.ClanService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.extern.java.Log;
 import org.postgresql.util.PSQLException;
@@ -77,11 +79,18 @@ public class ClanRepository implements ClanService {
    * @throws InterruptedException
    */
   @Override
-  public void changeClansGold(long clanId, int gold) throws SQLException, InterruptedException {
+  public GoldValues changeClansGold(long clanId, int gold) throws SQLException, InterruptedException {
     synchronized (lockService.getLock(getClan(clanId).orElseThrow())) {
       Clan clan = getClan(clanId).orElseThrow();
       goldSufficiencyCheck(clan, clan.getGold() + gold);
       updateGold(clan, clan.getGold() + gold);
+
+      return GoldValues.builder()
+          .dateTime(LocalDateTime.now())
+          .amountGoldBeforeRaise(clan.getGold())
+          .amountGoldToRaise(gold)
+          .amountGoldAfterRaise(clan.getGold() + gold)
+          .build();
     }
   }
 

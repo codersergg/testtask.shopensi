@@ -1,6 +1,7 @@
 package com.codersergg.service;
 
 import com.codersergg.model.Clan;
+import com.codersergg.monitoring.model.GoldValues;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -13,5 +14,5 @@ public interface ClanService {
 
   void addClan(Clan clan) throws SQLException, InterruptedException;
 
-  void changeClansGold(long clanId, int gold) throws SQLException, InterruptedException;
+  GoldValues changeClansGold(long clanId, int gold) throws SQLException, InterruptedException;
 }

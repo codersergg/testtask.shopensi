@@ -2,6 +2,10 @@ package com.codersergg.service;
 
 import com.codersergg.lock.LockService;
 import com.codersergg.model.Task;
+import com.codersergg.monitoring.Monitoring;
+import com.codersergg.monitoring.model.GoldValues;
+import com.codersergg.monitoring.model.Metric;
+import com.codersergg.monitoring.model.Operation;
 import com.codersergg.repository.TaskRepository;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -15,12 +19,14 @@ public class TaskService { // какой-то сервис с заданиями
   private final LockService lockService;
   private final ClanService clans;
   private final TaskRepository taskRepository;
+  private final Monitoring monitoring;
 
   public TaskService(LockService lockService, ClanService clans,
-      TaskRepository taskRepository) {
+      TaskRepository taskRepository, Monitoring monitoring) {
     this.lockService = lockService;
     this.clans = clans;
     this.taskRepository = taskRepository;
+    this.monitoring = monitoring;
   }
 
   public void completeTask(long clanId, long taskId) throws SQLException, InterruptedException {
@@ -43,7 +49,18 @@ public class TaskService { // какой-то сервис с заданиями
       checkProgress(task.getId());
       int reducedProgress = changeTaskProgress(taskId);
       if (reducedProgress == 0) {
-        clans.changeClansGold(clanId, task.getGold());
+        GoldValues goldValues = clans.changeClansGold(clanId, task.getGold());
+
+        monitoring.send(Metric.builder()
+            .dateTime(goldValues.getDateTime())
+            .clanId(clanId)
+            .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
+            .amountGoldToRaise(goldValues.getAmountGoldToRaise())
+            .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
+            .operation(Operation.TASK)
+            .message("taskId: " + taskId)
+            .build());
+
       }
     }
   }
