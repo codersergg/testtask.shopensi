@@ -22,7 +22,6 @@ repositories {
 
 dependencies {
     implementation 'org.postgresql:postgresql:42.5.0'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.0-rc2'
     compileOnly lombok
     annotationProcessor lombok
 

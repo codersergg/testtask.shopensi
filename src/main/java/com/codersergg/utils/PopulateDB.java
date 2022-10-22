@@ -8,7 +8,6 @@ import com.codersergg.service.TaskService;
 import com.codersergg.service.UserAddGoldService;
 import com.codersergg.service.UserService;
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import lombok.extern.java.Log;
 
@@ -56,7 +55,7 @@ public class PopulateDB {
           users.addUser(
               User.builder()
                   .name("User_" + finalI)
-                  .gold(0)
+                  .gold(1000)
                   .build());
           log.info("Add User: " + users.getUser(finalI).orElseThrow());
         } catch (SQLException | InterruptedException e) {
@@ -86,23 +85,19 @@ public class PopulateDB {
     }
   }
 
-  public void addGoldToUser() throws SQLException, InterruptedException {
+  public void addGoldToUser() {
     for (int i = 1, j = 50; i <= 50; i++, j--) {
-      executorSubmit(i, users.getUser(i));
-      executorSubmit(j, users.getUser(j));
+      executorSubmit(i);
+      executorSubmit(j);
     }
   }
 
-  private void executorSubmit(int id, Optional<User> userOptional) {
+  private void executorSubmit(int id) {
     executor.submit(() -> {
       try {
-        users.populateUsersGold(
-            User.builder()
-                .id(id)
-                .name(userOptional.orElseThrow().getName())
-                .gold(500)
-                .build());
-        log.info("Add Gold to User: " + userOptional.orElseThrow());
+        int gold = 1000;
+        users.changeUsersGold(id, gold);
+        log.info("Add Gold: " + gold + " to User id " + id);
       } catch (SQLException | InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -111,47 +106,26 @@ public class PopulateDB {
 
   public void addGoldToClan() {
 
-    for (int i = 1; i <= 400; i++) {
+    for (int i = 1; i <= 200; i++) {
       executor.submit(() -> {
+
         try {
           userAddGoldService.addGoldToClan(1, 1, 1);
-          log.info("Add User: " + users.getUser(1).orElseThrow() +
-              " to Clan: " + clans.getClan(1).orElseThrow());
+        } catch (SQLException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+
+        try {
+          log.info("Add gold from User: " + users.getUser(1).orElseThrow() +
+                " to Clan: " + clans.getClan(1).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
       });
       executor.submit(() -> {
         try {
-          userAddGoldService.addGoldToClan(2, 1, 1);
-          log.info("Add User: " + users.getUser(2).orElseThrow() +
-              " to Clan: " + clans.getClan(1).orElseThrow());
-        } catch (SQLException | InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-      executor.submit(() -> {
-        try {
-          userAddGoldService.addGoldToClan(3, 1, 1);
-          log.info("Add User: " + users.getUser(3).orElseThrow() +
-              " to Clan: " + clans.getClan(1).orElseThrow());
-        } catch (SQLException | InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-      executor.submit(() -> {
-        try {
-          userAddGoldService.addGoldToClan(4, 1, 1);
-          log.info("Add User: " + users.getUser(4).orElseThrow() +
-              " to Clan: " + clans.getClan(1).orElseThrow());
-        } catch (SQLException | InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-      executor.submit(() -> {
-        try {
-          userAddGoldService.addGoldToClan(5, 2, 1);
-          log.info("Add User: " + users.getUser(5).orElseThrow() +
+          userAddGoldService.addGoldToClan(2, 2, 1);
+          log.info("Add gold from User: " + users.getUser(2).orElseThrow() +
               " to Clan: " + clans.getClan(2).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
@@ -159,8 +133,8 @@ public class PopulateDB {
       });
       executor.submit(() -> {
         try {
-          userAddGoldService.addGoldToClan(6, 3, 1);
-          log.info("Add User: " + users.getUser(6).orElseThrow() +
+          userAddGoldService.addGoldToClan(3, 3, 1);
+          log.info("Add gold from User: " + users.getUser(3).orElseThrow() +
               " to Clan: " + clans.getClan(3).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
@@ -168,8 +142,8 @@ public class PopulateDB {
       });
       executor.submit(() -> {
         try {
-          userAddGoldService.addGoldToClan(7, 4, 1);
-          log.info("Add User: " + users.getUser(7).orElseThrow() +
+          userAddGoldService.addGoldToClan(4, 4, 1);
+          log.info("Add gold from User: " + users.getUser(4).orElseThrow() +
               " to Clan: " + clans.getClan(4).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
@@ -177,8 +151,8 @@ public class PopulateDB {
       });
       executor.submit(() -> {
         try {
-          userAddGoldService.addGoldToClan(8, 5, 1);
-          log.info("Add User: " + users.getUser(8).orElseThrow() +
+          userAddGoldService.addGoldToClan(5, 5, 1);
+          log.info("Add gold from User: " + users.getUser(5).orElseThrow() +
               " to Clan: " + clans.getClan(5).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
@@ -186,8 +160,8 @@ public class PopulateDB {
       });
       executor.submit(() -> {
         try {
-          userAddGoldService.addGoldToClan(9, 6, 1);
-          log.info("Add User: " + users.getUser(9).orElseThrow() +
+          userAddGoldService.addGoldToClan(6, 6, 1);
+          log.info("Add gold from User: " + users.getUser(6).orElseThrow() +
               " to Clan: " + clans.getClan(6).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
@@ -195,16 +169,43 @@ public class PopulateDB {
       });
       executor.submit(() -> {
         try {
-          userAddGoldService.addGoldToClan(10, 7, 2);
-          log.info("Add User: " + users.getUser(10).orElseThrow() +
-              " to Clan: " + clans.getClan(2).orElseThrow());
+          userAddGoldService.addGoldToClan(7, 6, 1);
+          log.info("Add gold from User: " + users.getUser(7).orElseThrow() +
+              " to Clan: " + clans.getClan(6).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
       });
       executor.submit(() -> {
         try {
-          tasks.completeTask(7, 1);
+          userAddGoldService.addGoldToClan(8, 6, 1);
+          log.info("Add gold from User: " + users.getUser(8).orElseThrow() +
+              " to Clan: " + clans.getClan(6).orElseThrow());
+        } catch (SQLException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      });
+      executor.submit(() -> {
+        try {
+          userAddGoldService.addGoldToClan(9, 6, 1);
+          log.info("Add gold from User: " + users.getUser(9).orElseThrow() +
+              " to Clan: " + clans.getClan(6).orElseThrow());
+        } catch (SQLException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      });
+      executor.submit(() -> {
+        try {
+          userAddGoldService.addGoldToClan(10, 6, 1);
+          log.info("Add gold from User: " + users.getUser(10).orElseThrow() +
+              " to Clan: " + clans.getClan(6).orElseThrow());
+        } catch (SQLException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      });
+      executor.submit(() -> {
+        try {
+          tasks.completeTask(6, 1);
           log.info("Complete Task: " + tasks.getTask(1).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
@@ -212,32 +213,32 @@ public class PopulateDB {
       });
       executor.submit(() -> {
         try {
-          tasks.completeTask(8, 2);
-          log.info("Complete Task: " + tasks.getTask(1).orElseThrow());
+          tasks.completeTask(7, 2);
+          log.info("Complete Task: " + tasks.getTask(2).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
       });
       executor.submit(() -> {
         try {
-          tasks.completeTask(9, 3);
-          log.info("Complete Task: " + tasks.getTask(1).orElseThrow());
+          tasks.completeTask(8, 3);
+          log.info("Complete Task: " + tasks.getTask(3).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
       });
       executor.submit(() -> {
         try {
-          tasks.completeTask(10, 4);
-          log.info("Complete Task: " + tasks.getTask(1).orElseThrow());
+          tasks.completeTask(9, 4);
+          log.info("Complete Task: " + tasks.getTask(4).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }
       });
       executor.submit(() -> {
         try {
-          tasks.completeTask(9, 5);
-          log.info("Complete Task: " + tasks.getTask(1).orElseThrow());
+          tasks.completeTask(10, 5);
+          log.info("Complete Task: " + tasks.getTask(5).orElseThrow());
         } catch (SQLException | InterruptedException e) {
           throw new RuntimeException(e);
         }

@@ -17,7 +17,7 @@ public class TableManagementUtil {
   }
 
   public void createTablesClan() throws SQLException, InterruptedException {
-    String query = "CREATE TABLE clan " +
+    String query = "CREATE TABLE clan" +
         "(id BIGSERIAL primary key, " +
         "name VARCHAR (20) NOT NULL, " +
         "gold int4, " +
@@ -43,7 +43,7 @@ public class TableManagementUtil {
   }
 
   public void createTablesUser() throws SQLException, InterruptedException {
-    String query = "CREATE TABLE user_player " +
+    String query = "CREATE TABLE user_player" +
         "(id BIGSERIAL primary key, " +
         "name VARCHAR (20) NOT NULL, " +
         "gold int4, " +
@@ -68,7 +68,7 @@ public class TableManagementUtil {
     }
   }
 public void createTablesTask() throws SQLException, InterruptedException {
-    String query = "CREATE TABLE task " +
+    String query = "CREATE TABLE task" +
         "(id BIGSERIAL primary key, " +
         "name VARCHAR (20) NOT NULL, " +
         "gold int4, " +

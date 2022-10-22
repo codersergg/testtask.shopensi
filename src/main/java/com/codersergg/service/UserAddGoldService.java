@@ -1,10 +1,7 @@
 package com.codersergg.service;
 
 import com.codersergg.lock.LockService;
-import com.codersergg.model.Clan;
-import com.codersergg.model.User;
 import java.sql.SQLException;
-import java.util.Optional;
 
 // Так же у нас есть ряд сервисов похожих на эти.
 // Их суть в том, что они добавляют(или уменьшают) золото в казне клана
@@ -22,16 +19,19 @@ public class UserAddGoldService { // пользователь добавляет
 
   public void addGoldToClan(long userId, long clanId, int gold)
       throws SQLException, InterruptedException {
-
-    synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
-      Optional<User> user = users.getUser(userId);
-      int userGold = user.orElseThrow().getGold() - gold;
-      users.changeUsersGold(userId, userGold);
-
-      synchronized (lockService.getLock(users.getUser(userId).orElseThrow())) {
-        Optional<Clan> clan = clans.getClan(clanId);
-        int clanGold = clan.orElseThrow().getGold() + gold;
-        clans.changeClansGold(clanId, clanGold);
+    synchronized (lockService.getLock(users.getUser(userId).orElseThrow())) {
+      try {
+        users.changeUsersGold(userId, -gold);
+      } catch (SQLException e) {
+        throw new RuntimeException();
+      }
+      synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
+        try {
+          clans.changeClansGold(clanId, gold);
+        } catch (SQLException e) {
+          users.changeUsersGold(userId, gold);
+          throw new RuntimeException();
+        }
       }
     }
   }

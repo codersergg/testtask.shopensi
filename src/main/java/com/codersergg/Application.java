@@ -10,7 +10,6 @@ import com.codersergg.repository.TaskRepository;
 import com.codersergg.repository.UserRepository;
 import com.codersergg.service.ClanService;
 import com.codersergg.service.TaskService;
-import com.codersergg.service.TaskServiceImpl;
 import com.codersergg.service.UserAddGoldService;
 import com.codersergg.service.UserService;
 import com.codersergg.utils.PopulateDB;
@@ -48,23 +47,24 @@ public class Application {
     }
   }
 
-  public static void main(String[] args) throws InterruptedException, SQLException {
+  public static void main(String[] args) {
     LockService lock = new LockServiceImpl();
     UserService users = new UserRepository(connectionPool, lock);
     ClanService clans = new ClanRepository(connectionPool, lock);
     TaskRepository taskRepository = new TaskRepository(connectionPool, lock);
-    TaskService tasks = new TaskServiceImpl(lock, clans, taskRepository);
+    TaskService tasks = new TaskService(lock, clans, taskRepository);
 
     UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users);
     ExecutorService executor = new Executor().getExecutorService();
     PopulateDB populateDB = new PopulateDB(executor, users, clans, tasks, userAddGoldService);
 
+    // Инициализация БД
     populateDB.addClans();
     populateDB.addUsers();
     populateDB.addTasks();
-    Thread.sleep(10000);
+
+    // Запуск имитации действий пользователей
     populateDB.addGoldToUser();
-    Thread.sleep(1000);
     populateDB.addGoldToClan();
   }
 

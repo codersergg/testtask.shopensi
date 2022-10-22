@@ -72,7 +72,7 @@ public class ClanRepository implements ClanService {
    * Метод изменения количества золота клана
    *
    * @param clanId
-   * @param gold   количество золота, подлежащего внесению в БД
+   * @param gold   количество золота, подлежащего добавлению клану
    * @throws SQLException
    * @throws InterruptedException
    */
@@ -80,8 +80,8 @@ public class ClanRepository implements ClanService {
   public void changeClansGold(long clanId, int gold) throws SQLException, InterruptedException {
     synchronized (lockService.getLock(getClan(clanId).orElseThrow())) {
       Clan clan = getClan(clanId).orElseThrow();
-      goldSufficiencyCheck(clan, gold);
-      updateGold(clan, gold);
+      goldSufficiencyCheck(clan, clan.getGold() + gold);
+      updateGold(clan, clan.getGold() + gold);
     }
   }
 

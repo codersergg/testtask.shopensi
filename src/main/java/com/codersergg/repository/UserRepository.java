@@ -65,11 +65,6 @@ public class UserRepository implements UserService {
       } catch (PSQLException e) {
         throw new RuntimeException(e);
       }
-      try {
-        getUser(user.getId());
-      } catch (PSQLException e) {
-        throw new RuntimeException(e);
-      }
     }
   }
 
@@ -77,34 +72,16 @@ public class UserRepository implements UserService {
    * Метод изменения количества золота пользователя
    *
    * @param userId
-   * @param gold   количество золота, подлежащего внесению в БД
+   * @param gold   количество золота, подлежащего добавлению пользователю
    * @throws SQLException
    * @throws InterruptedException
    */
   @Override
-  public void changeUsersGold(long userId, int gold) throws SQLException, InterruptedException {
+  public void changeUsersGold(long userId, int gold) throws InterruptedException, SQLException {
     synchronized (lockService.getLock(getUser(userId).orElseThrow())) {
       User user = getUser(userId).orElseThrow();
-      goldSufficiencyCheck(user, gold);
-      updateGold(user, gold);
-    }
-  }
-
-  /**
-   * Метод для популяции БД
-   *
-   * @param userGoldUpdate Объект содержащий количество золота подлежащего добавлению (если поде
-   *                       gold положительное) или уменишению (если поде gold отрицательное).
-   * @throws SQLException
-   * @throws InterruptedException
-   */
-  @Override
-  public void populateUsersGold(User userGoldUpdate) throws SQLException, InterruptedException {
-    synchronized (lockService.getLock(userGoldUpdate)) {
-      User user = getUser(userGoldUpdate.getId()).orElseThrow();
-      int newGold = user.getGold() + userGoldUpdate.getGold();
-      goldSufficiencyCheck(user, newGold);
-      updateGold(user, newGold);
+      goldSufficiencyCheck(user, user.getGold() + gold);
+      updateGold(user, user.getGold() + gold);
     }
   }
 
