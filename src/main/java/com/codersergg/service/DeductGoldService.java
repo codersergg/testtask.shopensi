@@ -1,21 +1,28 @@
 package com.codersergg.service;
 
-import com.codersergg.model.Clan;
+import com.codersergg.lock.LockService;
 import java.sql.SQLException;
-import java.util.Optional;
 
 public class DeductGoldService {
 
+  private final LockService lockService;
   private final ClanService clans;
 
-  public DeductGoldService(ClanService clans) {
+  public DeductGoldService(LockService lockService, ClanService clans) {
+    this.lockService = lockService;
     this.clans = clans;
   }
 
-  public void deductGoldFromClan(long userId, long clanId, int gold)
+  public void deductGoldFromClan(long clanId, int gold)
       throws SQLException, InterruptedException {
-    Optional<Clan> clan = clans.getClan(clanId);
-    // clan.[gold] += gold;
-    // как-то сохранить изменения
+
+    synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
+      try {
+        clans.changeClansGold(clanId, -gold);
+      } catch (SQLException e) {
+        throw new RuntimeException();
+      }
+    }
+
   }
 }

@@ -10,7 +10,7 @@ public class Executor {
 
   public ExecutorService getExecutorService() {
     final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(10_000_000);
-    return new ThreadPoolExecutor(16, 32, 5L, TimeUnit.MILLISECONDS, queue);
+    return new ThreadPoolExecutor(16, 128, 5L, TimeUnit.MILLISECONDS, queue);
   }
 
 }

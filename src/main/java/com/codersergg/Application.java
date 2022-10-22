@@ -9,6 +9,7 @@ import com.codersergg.repository.ClanRepository;
 import com.codersergg.repository.TaskRepository;
 import com.codersergg.repository.UserRepository;
 import com.codersergg.service.ClanService;
+import com.codersergg.service.DeductGoldService;
 import com.codersergg.service.TaskService;
 import com.codersergg.service.UserAddGoldService;
 import com.codersergg.service.UserService;
@@ -55,8 +56,10 @@ public class Application {
     TaskService tasks = new TaskService(lock, clans, taskRepository);
 
     UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users);
+    DeductGoldService deductGoldService = new DeductGoldService(lock, clans);
     ExecutorService executor = new Executor().getExecutorService();
-    PopulateDB populateDB = new PopulateDB(executor, users, clans, tasks, userAddGoldService);
+    PopulateDB populateDB = new PopulateDB(executor, users, clans, tasks, userAddGoldService,
+        deductGoldService);
 
     // Инициализация БД
     populateDB.addClans();
@@ -65,7 +68,7 @@ public class Application {
 
     // Запуск имитации действий пользователей
     populateDB.addGoldToUser();
-    populateDB.addGoldToClan();
+    populateDB.addAndDeductGold();
   }
 
 }
