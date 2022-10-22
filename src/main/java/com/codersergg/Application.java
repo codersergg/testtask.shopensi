@@ -6,8 +6,11 @@ import com.codersergg.executor.Executor;
 import com.codersergg.lock.LockService;
 import com.codersergg.lock.LockServiceImpl;
 import com.codersergg.repository.ClanRepository;
+import com.codersergg.repository.TaskRepository;
 import com.codersergg.repository.UserRepository;
 import com.codersergg.service.ClanService;
+import com.codersergg.service.TaskService;
+import com.codersergg.service.TaskServiceImpl;
 import com.codersergg.service.UserAddGoldService;
 import com.codersergg.service.UserService;
 import com.codersergg.utils.PopulateDB;
@@ -35,6 +38,10 @@ public class Application {
       log.info("Drop Table User");
       util.createTablesUser();
       log.info("Create Table User");
+      util.dropTablesTask();
+      log.info("Drop Table Task");
+      util.createTablesTask();
+      log.info("Create Table Task");
 
     } catch (SQLException | InterruptedException e) {
       throw new RuntimeException(e);
@@ -43,19 +50,22 @@ public class Application {
 
   public static void main(String[] args) throws InterruptedException, SQLException {
     LockService lock = new LockServiceImpl();
-    ClanService clans = new ClanRepository(connectionPool, lock);
     UserService users = new UserRepository(connectionPool, lock);
+    ClanService clans = new ClanRepository(connectionPool, lock);
+    TaskRepository taskRepository = new TaskRepository(connectionPool, lock);
+    TaskService tasks = new TaskServiceImpl(lock, clans, taskRepository);
+
     UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users);
     ExecutorService executor = new Executor().getExecutorService();
-    PopulateDB populateDB = new PopulateDB(executor, users, clans, userAddGoldService);
+    PopulateDB populateDB = new PopulateDB(executor, users, clans, tasks, userAddGoldService);
 
     populateDB.addClans();
     populateDB.addUsers();
+    populateDB.addTasks();
     Thread.sleep(10000);
     populateDB.addGoldToUser();
-    populateDB.updateGoldToUser();
-    populateDB.addUsersGoldToClan();
-
+    Thread.sleep(1000);
+    populateDB.addGoldToClan();
   }
 
 }

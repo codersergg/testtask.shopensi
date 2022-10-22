@@ -11,7 +11,7 @@ public interface ClanService {
 
   Optional<Clan> getClan(long clanId) throws SQLException, InterruptedException;
 
-  void addClan(Clan build) throws SQLException, InterruptedException;
+  void addClan(Clan clan) throws SQLException, InterruptedException;
 
   void changeClansGold(long clanId, int gold) throws SQLException, InterruptedException;
 }

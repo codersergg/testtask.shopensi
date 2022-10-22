@@ -1,26 +1,14 @@
 package com.codersergg.service;
 
-import com.codersergg.model.Clan;
+import com.codersergg.model.Task;
 import java.sql.SQLException;
 import java.util.Optional;
 
-// Еще один такой сервис
-public class TaskService { // какой-то сервис с заданиями
+public interface TaskService {
 
-  private final ClanService clans;
+  void completeTask(long clanId, long taskId) throws SQLException, InterruptedException;
 
-  public TaskService(ClanService clans) {
-    this.clans = clans;
-  }
+  void addTask(Task task) throws SQLException, InterruptedException;
 
-  void completeTask(long clanId, long taskId) throws SQLException, InterruptedException {
-    // ...
-
-    // if (success)
-    {
-      Optional<Clan> clan = clans.getClan(clanId);
-      // clan.[gold] += gold;
-      // как-то сохранить изменения
-    }
-  }
+  Optional<Task> getTask(long taskId) throws SQLException, InterruptedException;
 }

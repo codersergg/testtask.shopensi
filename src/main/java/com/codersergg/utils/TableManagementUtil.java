@@ -67,4 +67,30 @@ public class TableManagementUtil {
       e.printStackTrace();
     }
   }
+public void createTablesTask() throws SQLException, InterruptedException {
+    String query = "CREATE TABLE task " +
+        "(id BIGSERIAL primary key, " +
+        "name VARCHAR (20) NOT NULL, " +
+        "gold int4, " +
+        "progress int4, " +
+        "CONSTRAINT task_constraint UNIQUE (id, name))";
+    connection = connectionPool.getConnection();
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+      preparedStatement.execute();
+      connectionPool.releaseConnection(connection);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void dropTablesTask() throws SQLException, InterruptedException {
+    String query = "DROP TABLE IF EXISTS task";
+    connection = connectionPool.getConnection();
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+      preparedStatement.execute();
+      connectionPool.releaseConnection(connection);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
 }
