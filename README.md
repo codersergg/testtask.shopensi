@@ -14,7 +14,7 @@
 <h2>Реализация</h2>
 В основу приложения положена следующая архитектура:
 
-![app_architecture.jpg](../testtask.shopensi/src/app_architecture.jpg)
+![app_architecture.jpg](/src/app_architecture.jpg)
 
 Приложение содержит генератор тестовых данных для демонстрации своей работы.<br>
 Тестовые данные обрабатываются приложением в многопоточном режиме и записываются в PostgreSQL.</br>
