@@ -27,15 +27,15 @@
 Можно наблюдать сделующую картину<br>
 в таблицах:
 <br>
-![img.png](../testtask.shopensi/src/img.png)
+![img.png](/src/img.png)
 <br>
-![img_1.png](../testtask.shopensi/src/img_1.png)
+![img_1.png](/src/img_1.png)
 <br>
-![img_2.png](../testtask.shopensi/src/img_2.png)
+![img_2.png](/src/img_2.png)
 <br>
 в Kafka:
 <br>
-![img_3.png](../testtask.shopensi/src/img_3.png)
+![img_3.png](/src/img_3.png)
 <br>
 
 <h3>Что не было сделано, но обязательно в работе</h3>
