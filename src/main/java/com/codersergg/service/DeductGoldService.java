@@ -6,17 +6,21 @@ import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.monitoring.model.Metric;
 import com.codersergg.monitoring.model.Operation;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
 
 public class DeductGoldService {
 
   private final LockService lockService;
   private final ClanService clans;
   private final Monitoring monitoring;
+  private final ExecutorService executor;
 
-  public DeductGoldService(LockService lockService, ClanService clans, Monitoring monitoring) {
+  public DeductGoldService(LockService lockService, ClanService clans, Monitoring monitoring,
+      ExecutorService executor) {
     this.lockService = lockService;
     this.clans = clans;
     this.monitoring = monitoring;
+    this.executor = executor;
   }
 
   public void deductGoldFromClan(long clanId, int gold)
@@ -26,7 +30,7 @@ public class DeductGoldService {
       try {
         GoldValues goldValues = clans.changeClansGold(clanId, -gold);
 
-        monitoring.send(Metric.builder()
+        executor.submit(() -> monitoring.send(Metric.builder()
             .dateTime(goldValues.getDateTime())
             .clanId(clanId)
             .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
@@ -34,7 +38,7 @@ public class DeductGoldService {
             .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
             .operation(Operation.DEDUCT)
             .message("deductGoldFromClan")
-            .build());
+            .build()));
 
       } catch (SQLException e) {
         throw new RuntimeException();

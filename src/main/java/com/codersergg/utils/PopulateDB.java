@@ -110,7 +110,7 @@ public class PopulateDB {
 
   public void addAndDeductGold() {
 
-    for (int i = 1; i <= 1000; i++) {
+    for (int i = 1; i <= 300; i++) {
 
       executor.submit(() -> {
         try {

@@ -10,6 +10,7 @@ import com.codersergg.repository.TaskRepository;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import lombok.extern.java.Log;
 
 // Еще один такой сервис
@@ -20,13 +21,15 @@ public class TaskService { // какой-то сервис с заданиями
   private final ClanService clans;
   private final TaskRepository taskRepository;
   private final Monitoring monitoring;
+  private final ExecutorService executor;
 
   public TaskService(LockService lockService, ClanService clans,
-      TaskRepository taskRepository, Monitoring monitoring) {
+      TaskRepository taskRepository, Monitoring monitoring, ExecutorService executor) {
     this.lockService = lockService;
     this.clans = clans;
     this.taskRepository = taskRepository;
     this.monitoring = monitoring;
+    this.executor = executor;
   }
 
   public void completeTask(long clanId, long taskId) throws SQLException, InterruptedException {
@@ -51,7 +54,7 @@ public class TaskService { // какой-то сервис с заданиями
       if (reducedProgress == 0) {
         GoldValues goldValues = clans.changeClansGold(clanId, task.getGold());
 
-        monitoring.send(Metric.builder()
+        executor.submit(() -> monitoring.send(Metric.builder()
             .dateTime(goldValues.getDateTime())
             .clanId(clanId)
             .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
@@ -59,7 +62,7 @@ public class TaskService { // какой-то сервис с заданиями
             .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
             .operation(Operation.TASK)
             .message("taskId: " + taskId)
-            .build());
+            .build()));
 
       }
     }
