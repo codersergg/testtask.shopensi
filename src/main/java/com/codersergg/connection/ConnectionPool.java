@@ -1,4 +1,4 @@
-package com.codersergg.db;
+package com.codersergg.connection;
 
 import java.sql.Connection;
 import java.sql.SQLException;

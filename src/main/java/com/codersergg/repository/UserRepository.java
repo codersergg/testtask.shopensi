@@ -1,6 +1,6 @@
 package com.codersergg.repository;
 
-import com.codersergg.db.ConnectionPool;
+import com.codersergg.connection.ConnectionPool;
 import com.codersergg.lock.LockService;
 import com.codersergg.model.User;
 import com.codersergg.service.UserService;

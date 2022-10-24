@@ -1,7 +1,7 @@
 package com.codersergg;
 
-import com.codersergg.db.ConnectionPool;
-import com.codersergg.db.JdbcConnectionPool;
+import com.codersergg.connection.ConnectionPool;
+import com.codersergg.connection.JdbcConnectionPool;
 import com.codersergg.executor.AppExecutor;
 import com.codersergg.lock.LockService;
 import com.codersergg.lock.LockServiceImpl;

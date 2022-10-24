@@ -1,6 +1,6 @@
 package com.codersergg.utils;
 
-import com.codersergg.db.ConnectionPool;
+import com.codersergg.connection.ConnectionPool;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
