@@ -14,7 +14,7 @@
 <h2>Реализация</h2>
 В основу приложения положена следующая архитектура:<br>
 <br>
-img.1<br>
+img.1
 ![app_architecture.jpg](src/app_architecture.jpg)
 <br>
 <br>
