@@ -68,7 +68,7 @@ public class TaskService { // какой-то сервис с заданиями
     }
   }
 
-  public int changeTaskProgress(long taskId) throws SQLException, InterruptedException {
+  private int changeTaskProgress(long taskId) throws SQLException, InterruptedException {
     taskRepository.deductTaskProgress(taskId);
     return getTask(taskId).orElseThrow().getProgress();
   }

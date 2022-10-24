@@ -1,14 +1,15 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'idea'
 }
 
 group 'com.codersergg'
 version '1.0-SNAPSHOT'
 compileJava.options.encoding = 'UTF-8'
-apply plugin: 'application'
 mainClassName = 'com.codersergg.Application'
-
-def lombok = 'org.projectlombok:lombok:1.18.24'
+sourceCompatibility = 11
+targetCompatibility = 11
 
 jar {
     manifest {
@@ -23,17 +24,34 @@ repositories {
 dependencies {
     implementation 'org.postgresql:postgresql:42.5.0'
     implementation 'org.apache.kafka:kafka-clients:3.3.1'
-    compileOnly lombok
-    annotationProcessor lombok
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
-    testCompileOnly lombok
-    testAnnotationProcessor lombok
+    testImplementation 'com.h2database:h2:2.1.214'
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.9.0')
+    testImplementation 'org.mockito:mockito-core:4.8.0'
+    testImplementation 'net.jodah:concurrentunit:0.4.6'
 }
 
 test {
     useJUnitPlatform()
+
+    include 'com/codersergg/**/**'
+
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: " + descriptor)
+    }
+
+    failFast = true
+
+    onOutput { descriptor, event ->
+        logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message )
+    }
+
 }
 
 tasks.withType(JavaCompile) {

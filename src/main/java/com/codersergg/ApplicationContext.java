@@ -28,30 +28,6 @@ public class ApplicationContext {
 
   public static ConnectionPool connectionPool;
 
-  static {
-    try {
-      connectionPool = JdbcConnectionPool
-          .create("jdbc:postgresql://localhost:5432/postgres", "sergg", "pass");
-      log.info("Created connection pool");
-      TableManagementUtil util = new TableManagementUtil(connectionPool);
-      util.dropTablesClan();
-      log.info("Drop Table Clan");
-      util.createTablesClan();
-      log.info("Create Table Clan");
-      util.dropTablesUser();
-      log.info("Drop Table User");
-      util.createTablesUser();
-      log.info("Create Table User");
-      util.dropTablesTask();
-      log.info("Drop Table Task");
-      util.createTablesTask();
-      log.info("Create Table Task");
-
-    } catch (SQLException | InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static void init() {
     LockService lock = new LockServiceImpl();
     UserService users = new UserRepository(connectionPool, lock);
@@ -59,30 +35,54 @@ public class ApplicationContext {
     TaskRepository taskRepository = new TaskRepository(connectionPool, lock);
     ExecutorService executor = new AppExecutor().getExecutorService();
     ExecutorService kafkaExecutor = new AppExecutor().getKafkaExecutorService();
-
-    Monitoring monitoring = new KafkaMonitoring(new MonitoringKafkaProducer(new InMemoryMonitoring()));
-
+    Monitoring monitoring = new KafkaMonitoring(
+        new MonitoringKafkaProducer(new InMemoryMonitoring()));
     TaskService tasks = new TaskService(lock, clans, taskRepository, monitoring, kafkaExecutor);
     UserAddGoldService userAddGoldService = new UserAddGoldService(lock, clans, users, monitoring,
         kafkaExecutor);
     DeductGoldService deductGoldService = new DeductGoldService(lock, clans, monitoring,
         kafkaExecutor);
-
     PopulateDB populateDB = new PopulateDB(executor, users, clans, tasks, userAddGoldService,
         deductGoldService);
+    initPopulateDB(populateDB);
+    initWorkTask(populateDB);
+  }
 
-    // Инициализация БД
+  public static ConnectionPool initConnectionPool(String url, String user, String password)
+      throws SQLException {
+    connectionPool = JdbcConnectionPool.create(url, user, password);
+    return connectionPool;
+  }
+
+  public static void initDB(ConnectionPool connectionPool)
+      throws SQLException, InterruptedException {
+    log.info("Created connection pool");
+    TableManagementUtil util = new TableManagementUtil(connectionPool);
+    util.dropTablesClan();
+    log.info("Drop Table Clan");
+    util.createTablesClan();
+    log.info("Create Table Clan");
+    util.dropTablesUser();
+    log.info("Drop Table User");
+    util.createTablesUser();
+    log.info("Create Table User");
+    util.dropTablesTask();
+    log.info("Drop Table Task");
+    util.createTablesTask();
+    log.info("Create Table Task");
+  }
+
+  public static void initPopulateDB(PopulateDB populateDB) {
+    // Популяция БД
     populateDB.addClans();
     populateDB.addUsers();
     populateDB.addTasks();
+  }
 
+  public static void initWorkTask(PopulateDB populateDB) {
     // Запуск имитации действий пользователей
     populateDB.addGoldToUser();
     populateDB.addAndDeductGold();
-
-    /*Thread.sleep(4 * 60 * 1000);
-    monitoring.getMetricMap().forEach(
-        (id, metric) -> System.out.println("id metric: " + id + " metric: " + metric.toString()));*/
   }
 
 }
