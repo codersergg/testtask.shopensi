@@ -75,7 +75,7 @@ class TaskServiceTest {
         }
       });
     }
-    waiter.await(2, TimeUnit.SECONDS, 50);
+    waiter.await(5, TimeUnit.SECONDS, 50);
     assertEquals(50, clans.getClan(1L).orElseThrow().getGold());
   }
 
@@ -99,7 +99,7 @@ class TaskServiceTest {
         });
       }
     });
-    waiter.await(2, TimeUnit.SECONDS, 50);
+    waiter.await(5, TimeUnit.SECONDS, 50);
     assertEquals(50, clans.getClan(1L).orElseThrow().getGold());
     assertEquals(50, taskService.getTask(1L).orElseThrow().getGold());
     assertEquals(0, taskService.getTask(1L).orElseThrow().getProgress());

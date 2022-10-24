@@ -63,7 +63,6 @@ public class TaskService { // какой-то сервис с заданиями
             .operation(Operation.TASK)
             .message("taskId: " + taskId)
             .build()));
-
       }
     }
   }

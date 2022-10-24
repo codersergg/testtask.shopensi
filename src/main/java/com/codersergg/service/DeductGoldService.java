@@ -27,23 +27,17 @@ public class DeductGoldService {
       throws SQLException, InterruptedException {
 
     synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
-      try {
-        GoldValues goldValues = clans.changeClansGold(clanId, -gold);
+      GoldValues goldValues = clans.changeClansGold(clanId, -gold);
 
-        executor.submit(() -> monitoring.send(Metric.builder()
-            .dateTime(goldValues.getDateTime())
-            .clanId(clanId)
-            .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
-            .amountGoldToRaise(goldValues.getAmountGoldToRaise())
-            .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
-            .operation(Operation.DEDUCT)
-            .message("deductGoldFromClan")
-            .build()));
-
-      } catch (SQLException e) {
-        throw new RuntimeException();
-      }
+      executor.submit(() -> monitoring.send(Metric.builder()
+          .dateTime(goldValues.getDateTime())
+          .clanId(clanId)
+          .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
+          .amountGoldToRaise(goldValues.getAmountGoldToRaise())
+          .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
+          .operation(Operation.DEDUCT)
+          .message("deductGoldFromClan")
+          .build()));
     }
-
   }
 }

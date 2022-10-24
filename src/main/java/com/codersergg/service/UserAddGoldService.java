@@ -29,31 +29,23 @@ public class UserAddGoldService { // пользователь добавляет
 
   public void addGoldToClan(long userId, long clanId, int gold)
       throws SQLException, InterruptedException {
+
     synchronized (lockService.getLock(users.getUser(userId).orElseThrow())) {
-      try {
-        users.changeUsersGold(userId, -gold);
-      } catch (SQLException e) {
-        throw new RuntimeException();
-      }
+      users.changeUsersGold(userId, -gold);
+
       synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
-        try {
-          GoldValues goldValues = clans.changeClansGold(clanId, gold);
+        GoldValues goldValues = clans.changeClansGold(clanId, gold);
 
-          executor.submit(() ->
-              monitoring.send(Metric.builder()
-                  .dateTime(goldValues.getDateTime())
-                  .clanId(clanId)
-                  .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
-                  .amountGoldToRaise(goldValues.getAmountGoldToRaise())
-                  .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
-                  .operation(Operation.ADD)
-                  .message("userId: " + userId)
-                  .build()));
-
-        } catch (SQLException e) {
-          users.changeUsersGold(userId, gold);
-          throw new RuntimeException();
-        }
+        executor.submit(() ->
+            monitoring.send(Metric.builder()
+                .dateTime(goldValues.getDateTime())
+                .clanId(clanId)
+                .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())
+                .amountGoldToRaise(goldValues.getAmountGoldToRaise())
+                .amountGoldAfterRaise(goldValues.getAmountGoldAfterRaise())
+                .operation(Operation.ADD)
+                .message("userId: " + userId)
+                .build()));
       }
     }
   }

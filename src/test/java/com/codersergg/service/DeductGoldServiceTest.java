@@ -61,7 +61,7 @@ class DeductGoldServiceTest {
         }
       });
     }
-    waiter.await(2, TimeUnit.SECONDS, 50);
+    waiter.await(5, TimeUnit.SECONDS, 50);
     assertEquals(1, clans.getClan(1L).orElseThrow().getGold());
   }
 
@@ -73,6 +73,17 @@ class DeductGoldServiceTest {
     RuntimeException exception = assertThrows(RuntimeException.class,
         () -> deductGoldService.deductGoldFromClan(1L, 10));
     String expected = "The clan Clan(id=1, name=Clan_1, gold=1) does not have enough gold for this action";
+    assertEquals(expected, exception.getMessage());
+  }
+
+  @Test
+  void testDeductGoldFromClanThrows2() throws InterruptedException, SQLException {
+    clans.addClan(Clan.builder().name("Clan_1").gold(1).build());
+    assertEquals(1, clans.getClan(1L).orElseThrow().getGold());
+
+    RuntimeException exception = assertThrows(RuntimeException.class,
+        () -> deductGoldService.deductGoldFromClan(2L, 10));
+    String expected = "No value present";
     assertEquals(expected, exception.getMessage());
   }
 }
