@@ -2,8 +2,8 @@ package com.codersergg.service;
 
 import com.codersergg.lock.LockService;
 import com.codersergg.monitoring.Monitoring;
-import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.monitoring.model.Event;
+import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.monitoring.model.Operation;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
@@ -34,8 +34,13 @@ public class UserAddGoldService { // пользователь добавляет
       users.changeUsersGold(userId, -gold);
 
       synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
-        GoldValues goldValues = clans.changeClansGold(clanId, gold);
-
+        GoldValues goldValues;
+        try {
+          goldValues = clans.changeClansGold(clanId, gold);
+        } catch (SQLException e) {
+          users.changeUsersGold(userId, gold);
+          throw new RuntimeException();
+        }
         executor.submit(() ->
             monitoring.send(Event.builder()
                 .dateTime(goldValues.getDateTime())
