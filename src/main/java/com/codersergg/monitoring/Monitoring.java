@@ -1,9 +1,9 @@
 package com.codersergg.monitoring;
 
-import com.codersergg.monitoring.model.Metric;
+import com.codersergg.monitoring.model.Event;
 
 public interface Monitoring {
 
-  void send(Metric metric);
+  void send(Event event);
 
 }

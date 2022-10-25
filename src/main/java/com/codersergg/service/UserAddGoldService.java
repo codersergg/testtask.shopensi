@@ -3,7 +3,7 @@ package com.codersergg.service;
 import com.codersergg.lock.LockService;
 import com.codersergg.monitoring.Monitoring;
 import com.codersergg.monitoring.model.GoldValues;
-import com.codersergg.monitoring.model.Metric;
+import com.codersergg.monitoring.model.Event;
 import com.codersergg.monitoring.model.Operation;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +37,7 @@ public class UserAddGoldService { // пользователь добавляет
         GoldValues goldValues = clans.changeClansGold(clanId, gold);
 
         executor.submit(() ->
-            monitoring.send(Metric.builder()
+            monitoring.send(Event.builder()
                 .dateTime(goldValues.getDateTime())
                 .clanId(clanId)
                 .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())

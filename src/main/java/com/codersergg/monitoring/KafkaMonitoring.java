@@ -1,6 +1,6 @@
 package com.codersergg.monitoring;
 
-import com.codersergg.monitoring.model.Metric;
+import com.codersergg.monitoring.model.Event;
 import com.codersergg.monitoring.producer.MonitoringKafkaProducer;
 
 public class KafkaMonitoring implements Monitoring {
@@ -12,7 +12,7 @@ public class KafkaMonitoring implements Monitoring {
   }
 
   @Override
-  public void send(Metric metric) {
-    producer.send(metric);
+  public void send(Event event) {
+    producer.send(event);
   }
 }

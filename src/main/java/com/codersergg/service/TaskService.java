@@ -4,7 +4,7 @@ import com.codersergg.lock.LockService;
 import com.codersergg.model.Task;
 import com.codersergg.monitoring.Monitoring;
 import com.codersergg.monitoring.model.GoldValues;
-import com.codersergg.monitoring.model.Metric;
+import com.codersergg.monitoring.model.Event;
 import com.codersergg.monitoring.model.Operation;
 import com.codersergg.repository.TaskRepository;
 import java.sql.SQLException;
@@ -54,7 +54,7 @@ public class TaskService { // какой-то сервис с заданиями
       if (reducedProgress == 0) {
         GoldValues goldValues = clans.changeClansGold(clanId, task.getGold());
 
-        executor.submit(() -> monitoring.send(Metric.builder()
+        executor.submit(() -> monitoring.send(Event.builder()
             .dateTime(goldValues.getDateTime())
             .clanId(clanId)
             .amountGoldBeforeRaise(goldValues.getAmountGoldBeforeRaise())

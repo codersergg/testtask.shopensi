@@ -2,7 +2,7 @@ package com.codersergg.monitoring.producer;
 
 import com.codersergg.executor.AppExecutor;
 import com.codersergg.monitoring.InMemoryMonitoring;
-import com.codersergg.monitoring.model.Metric;
+import com.codersergg.monitoring.model.Event;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
@@ -47,49 +47,49 @@ public class MonitoringKafkaProducer {
     });
   }
 
-  public void send(Metric metric) {
+  public void send(Event event) {
     ProducerRecord<String, String> record = new ProducerRecord<>("monitoring",
-        String.valueOf(metric.getClanId()), metric.toString());
+        String.valueOf(event.getClanId()), event.toString());
     if (isNoAvailable()) {
-      memoryMonitoring.send(metric);
-      log.info("the metric: " + metric
+      memoryMonitoring.send(event);
+      log.info("the metric: " + event
           + " was not sent on the first attempt and saved in the backup service");
-      log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
+      log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
     } else {
       try {
         producer.send(record);
-        log.info("metric: " + metric + " sent on first try");
+        log.info("event: " + event + " sent on first try");
       } catch (ProducerFencedException | OutOfOrderSequenceException | AuthorizationException e) {
-        memoryMonitoring.send(metric);
-        log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
+        memoryMonitoring.send(event);
+        log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
       } catch (KafkaException e) {
-        secondTrySend(record, metric);
+        secondTrySend(record, event);
       } catch (Exception e) {
-        secondTrySend(record, metric);
-        log.info("the metric: " + metric
+        secondTrySend(record, event);
+        log.info("the event: " + event
             + " was not sent on the first attempt and saved in the backup service");
       }
     }
   }
 
-  private void secondTrySend(ProducerRecord<String, String> record, Metric metric) {
+  private void secondTrySend(ProducerRecord<String, String> record, Event event) {
     if (isNoAvailable()) {
-      memoryMonitoring.send(metric);
-      log.info("the metric: " + metric
+      memoryMonitoring.send(event);
+      log.info("the event: " + event
           + " was not sent on the second attempt and saved in the backup service");
-      log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
+      log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
     } else {
       try {
         producer.send(record);
-        log.info("metric: " + metric + " sent on second try");
+        log.info("event: " + event + " sent on second try");
       } catch (ProducerFencedException | OutOfOrderSequenceException e) {
-        memoryMonitoring.send(metric);
-        log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
+        memoryMonitoring.send(event);
+        log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
       } catch (KafkaException e) {
-        memoryMonitoring.send(metric);
-        log.info("the metric: " + metric
+        memoryMonitoring.send(event);
+        log.info("the event: " + event
             + " was not sent on the second attempt and saved in the backup service");
-        log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
+        log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
       }
     }
   }
@@ -107,9 +107,9 @@ public class MonitoringKafkaProducer {
   }
 
   private void loadingFromMemoryIntoKafka() throws InterruptedException {
-    Queue<Metric> metricQueue = memoryMonitoring.getMetricQueue();
-    if (metricQueue.size() != 0) {
-      executorService.submit(metricQueue::poll);
+    Queue<Event> eventQueue = memoryMonitoring.getEventQueue();
+    if (eventQueue.size() != 0) {
+      executorService.submit(eventQueue::poll);
     } else {
       Thread.sleep(10_000);
       loadingFromMemoryIntoKafka();

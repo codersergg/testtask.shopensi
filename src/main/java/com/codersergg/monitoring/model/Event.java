@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Metric implements Serializable {
+public class Event implements Serializable {
 
   private LocalDateTime dateTime;
   private long clanId;
@@ -22,31 +22,31 @@ public class Metric implements Serializable {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Metric)) {
+    if (!(o instanceof Event)) {
       return false;
     }
 
-    Metric metric = (Metric) o;
+    Event event = (Event) o;
 
-    if (getClanId() != metric.getClanId()) {
+    if (getClanId() != event.getClanId()) {
       return false;
     }
-    if (getAmountGoldBeforeRaise() != metric.getAmountGoldBeforeRaise()) {
+    if (getAmountGoldBeforeRaise() != event.getAmountGoldBeforeRaise()) {
       return false;
     }
-    if (getAmountGoldToRaise() != metric.getAmountGoldToRaise()) {
+    if (getAmountGoldToRaise() != event.getAmountGoldToRaise()) {
       return false;
     }
-    if (getAmountGoldAfterRaise() != metric.getAmountGoldAfterRaise()) {
+    if (getAmountGoldAfterRaise() != event.getAmountGoldAfterRaise()) {
       return false;
     }
-    if (!getDateTime().equals(metric.getDateTime())) {
+    if (!getDateTime().equals(event.getDateTime())) {
       return false;
     }
-    if (getOperation() != metric.getOperation()) {
+    if (getOperation() != event.getOperation()) {
       return false;
     }
-    return getMessage().equals(metric.getMessage());
+    return getMessage().equals(event.getMessage());
   }
 
   @Override
