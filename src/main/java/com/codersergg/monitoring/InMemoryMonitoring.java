@@ -1,24 +1,21 @@
 package com.codersergg.monitoring;
 
 import com.codersergg.monitoring.model.Metric;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.extern.java.Log;
 
 @Log
-public class InMemoryMonitoring {
+public class InMemoryMonitoring implements Monitoring {
 
-  private static final AtomicLong count  = new AtomicLong(0);
-
-  Map <Long, Metric> metricMap = new ConcurrentHashMap<>(10_000);
+  private final Queue<Metric> metricQueue = new ConcurrentLinkedQueue<>();
 
   public void send(Metric metric) {
-    metricMap.put(count.incrementAndGet(), metric);
+    metricQueue.add(metric);
     log.info(metric.toString());
   }
 
-  public Map<Long, Metric> getMetricMap() {
-    return metricMap;
+  public Queue<Metric> getMetricQueue() {
+    return metricQueue;
   }
 }

@@ -10,14 +10,14 @@ import lombok.Getter;
 @Getter
 public class JdbcConnectionPool implements ConnectionPool {
 
+  private static final int INITIAL_POOL_SIZE = 10;
+  private static final int MAX_POOL_SIZE = 20;
+  private static final int MAX_TIMEOUT = 5;
   private final String url;
   private final String user;
   private final String password;
   private final Queue<Connection> connectionPool;
   private final Queue<Connection> usedConnections = new ConcurrentLinkedQueue<>();
-  private static final int INITIAL_POOL_SIZE = 10;
-  private static final int MAX_POOL_SIZE = 20;
-  private static final int MAX_TIMEOUT = 5;
 
   public static JdbcConnectionPool create(String url, String user, String password)
       throws SQLException {

@@ -33,8 +33,8 @@ public class ApplicationContext {
     UserService users = new UserRepository(connectionPool, lock);
     ClanService clans = new ClanRepository(connectionPool, lock);
     TaskRepository taskRepository = new TaskRepository(connectionPool, lock);
-    ExecutorService executor = new AppExecutor().getExecutorService();
-    ExecutorService kafkaExecutor = new AppExecutor().getKafkaExecutorService();
+    ExecutorService executor = AppExecutor.getExecutorService();
+    ExecutorService kafkaExecutor = AppExecutor.getKafkaExecutorService();
     Monitoring monitoring = new KafkaMonitoring(
         new MonitoringKafkaProducer(new InMemoryMonitoring()));
     TaskService tasks = new TaskService(lock, clans, taskRepository, monitoring, kafkaExecutor);

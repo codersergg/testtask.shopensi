@@ -10,8 +10,6 @@ import com.codersergg.lock.LockServiceImpl;
 import com.codersergg.model.Clan;
 import com.codersergg.model.User;
 import com.codersergg.monitoring.InMemoryMonitoring;
-import com.codersergg.monitoring.KafkaMonitoring;
-import com.codersergg.monitoring.producer.MonitoringKafkaProducer;
 import com.codersergg.repository.ClanRepository;
 import com.codersergg.repository.UserRepository;
 import java.sql.SQLException;
@@ -24,11 +22,11 @@ import org.junit.jupiter.api.Test;
 
 class UserAddGoldServiceTest {
 
+  private static final ExecutorService executorService = AppExecutor.getExecutorService();
+  private final Waiter waiter = new Waiter();
   private ClanRepository clans;
   private UserRepository users;
   private UserAddGoldService userAddGoldService;
-  private final Waiter waiter = new Waiter();
-  private final ExecutorService executorService = new AppExecutor().getExecutorService();
 
   @BeforeEach
   void initContext() throws SQLException, InterruptedException {
@@ -39,8 +37,8 @@ class UserAddGoldServiceTest {
     users = new UserRepository(connectionPool, lockService);
     userAddGoldService = new UserAddGoldService(lockService, clans,
         new UserRepository(connectionPool, lockService),
-        new KafkaMonitoring(new MonitoringKafkaProducer(new InMemoryMonitoring())),
-        new AppExecutor().getExecutorService());
+        new InMemoryMonitoring(),
+        AppExecutor.getExecutorService());
     ApplicationContext.initDB(connectionPool);
   }
 
@@ -70,7 +68,7 @@ class UserAddGoldServiceTest {
         }
       });
     }
-    waiter.await(5, TimeUnit.SECONDS, 50);
+    waiter.await(10, TimeUnit.SECONDS, 50);
     assertEquals(100, clans.getClan(1L).orElseThrow().getGold());
     assertEquals(50, users.getUser(1L).orElseThrow().getGold());
     assertEquals(50, users.getUser(2L).orElseThrow().getGold());

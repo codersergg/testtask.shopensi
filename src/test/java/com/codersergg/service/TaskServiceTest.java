@@ -10,8 +10,6 @@ import com.codersergg.lock.LockServiceImpl;
 import com.codersergg.model.Clan;
 import com.codersergg.model.Task;
 import com.codersergg.monitoring.InMemoryMonitoring;
-import com.codersergg.monitoring.KafkaMonitoring;
-import com.codersergg.monitoring.producer.MonitoringKafkaProducer;
 import com.codersergg.repository.ClanRepository;
 import com.codersergg.repository.TaskRepository;
 import java.sql.SQLException;
@@ -24,10 +22,10 @@ import org.junit.jupiter.api.Test;
 
 class TaskServiceTest {
 
+  private final Waiter waiter = new Waiter();
+  private final ExecutorService executorService = AppExecutor.getExecutorService();
   private ClanRepository clans;
   private TaskService taskService;
-  private final Waiter waiter = new Waiter();
-  private final ExecutorService executorService = new AppExecutor().getExecutorService();
 
   @BeforeEach
   void initContext() throws SQLException, InterruptedException {
@@ -37,11 +35,10 @@ class TaskServiceTest {
     clans = new ClanRepository(connectionPool, lockService);
     taskService = new TaskService(lockService, clans,
         new TaskRepository(connectionPool, lockService),
-        new KafkaMonitoring(new MonitoringKafkaProducer(new InMemoryMonitoring())),
-        new AppExecutor().getExecutorService());
+        new InMemoryMonitoring(),
+        AppExecutor.getExecutorService());
     ApplicationContext.initDB(connectionPool);
   }
-
 
   @Test
   void testCompleteTask() throws InterruptedException, SQLException {
@@ -75,7 +72,7 @@ class TaskServiceTest {
         }
       });
     }
-    waiter.await(5, TimeUnit.SECONDS, 50);
+    waiter.await(20, TimeUnit.SECONDS, 50);
     assertEquals(50, clans.getClan(1L).orElseThrow().getGold());
   }
 
@@ -99,7 +96,7 @@ class TaskServiceTest {
         });
       }
     });
-    waiter.await(5, TimeUnit.SECONDS, 50);
+    waiter.await(20, TimeUnit.SECONDS, 50);
     assertEquals(50, clans.getClan(1L).orElseThrow().getGold());
     assertEquals(50, taskService.getTask(1L).orElseThrow().getGold());
     assertEquals(0, taskService.getTask(1L).orElseThrow().getProgress());

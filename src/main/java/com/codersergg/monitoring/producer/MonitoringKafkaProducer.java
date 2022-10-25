@@ -1,10 +1,13 @@
 package com.codersergg.monitoring.producer;
 
+import com.codersergg.executor.AppExecutor;
 import com.codersergg.monitoring.InMemoryMonitoring;
 import com.codersergg.monitoring.model.Metric;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
@@ -20,10 +23,9 @@ import org.apache.kafka.common.errors.ProducerFencedException;
 @Log
 public class MonitoringKafkaProducer {
 
+  private static final ExecutorService executorService = AppExecutor.getKafkaExecutorService();
   private final Producer<String, String> producer;
-
   private final InMemoryMonitoring memoryMonitoring;
-
   private final Properties properties = new Properties();
 
   public MonitoringKafkaProducer(InMemoryMonitoring memoryMonitoring) {
@@ -36,6 +38,13 @@ public class MonitoringKafkaProducer {
     properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     this.producer = new KafkaProducer<>(properties);
     this.memoryMonitoring = memoryMonitoring;
+    executorService.submit(() -> {
+      try {
+        loadingFromMemoryIntoKafka();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   public void send(Metric metric) {
@@ -45,14 +54,14 @@ public class MonitoringKafkaProducer {
       memoryMonitoring.send(metric);
       log.info("the metric: " + metric
           + " was not sent on the first attempt and saved in the backup service");
-      log.info("backup service size: " + memoryMonitoring.getMetricMap().size());
+      log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
     } else {
       try {
         producer.send(record);
         log.info("metric: " + metric + " sent on first try");
       } catch (ProducerFencedException | OutOfOrderSequenceException | AuthorizationException e) {
         memoryMonitoring.send(metric);
-        log.info("backup service size: " + memoryMonitoring.getMetricMap().size());
+        log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
       } catch (KafkaException e) {
         secondTrySend(record, metric);
       } catch (Exception e) {
@@ -63,30 +72,29 @@ public class MonitoringKafkaProducer {
     }
   }
 
-
   private void secondTrySend(ProducerRecord<String, String> record, Metric metric) {
     if (isNoAvailable()) {
       memoryMonitoring.send(metric);
       log.info("the metric: " + metric
           + " was not sent on the second attempt and saved in the backup service");
-      log.info("backup service size: " + memoryMonitoring.getMetricMap().size());
+      log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
     } else {
       try {
         producer.send(record);
         log.info("metric: " + metric + " sent on second try");
       } catch (ProducerFencedException | OutOfOrderSequenceException e) {
         memoryMonitoring.send(metric);
-        log.info("backup service size: " + memoryMonitoring.getMetricMap().size());
+        log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
       } catch (KafkaException e) {
         memoryMonitoring.send(metric);
         log.info("the metric: " + metric
             + " was not sent on the second attempt and saved in the backup service");
-        log.info("backup service size: " + memoryMonitoring.getMetricMap().size());
+        log.info("backup service size: " + memoryMonitoring.getMetricQueue().size());
       }
     }
   }
 
-  private boolean isNoAvailable() {
+  public boolean isNoAvailable() {
     try (AdminClient client = KafkaAdminClient.create(properties)) {
       ListTopicsResult topics = client.listTopics();
       Set<String> names = topics.names().get();
@@ -98,4 +106,13 @@ public class MonitoringKafkaProducer {
     }
   }
 
+  private void loadingFromMemoryIntoKafka() throws InterruptedException {
+    Queue<Metric> metricQueue = memoryMonitoring.getMetricQueue();
+    if (metricQueue.size() != 0) {
+      executorService.submit(metricQueue::poll);
+    } else {
+      Thread.sleep(10_000);
+      loadingFromMemoryIntoKafka();
+    }
+  }
 }
