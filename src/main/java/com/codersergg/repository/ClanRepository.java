@@ -49,7 +49,7 @@ public class ClanRepository implements ClanService {
           return Optional.empty();
         }
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
@@ -65,7 +65,7 @@ public class ClanRepository implements ClanService {
         preparedStatement.execute();
         connectionPool.releaseConnection(connection);
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
@@ -112,7 +112,7 @@ public class ClanRepository implements ClanService {
         preparedStatement.executeUpdate();
         connectionPool.releaseConnection(connection);
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }

@@ -46,7 +46,7 @@ public class UserRepository implements UserService {
           return Optional.empty();
         }
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
@@ -63,7 +63,7 @@ public class UserRepository implements UserService {
         preparedStatement.execute();
         connectionPool.releaseConnection(connection);
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
@@ -103,7 +103,7 @@ public class UserRepository implements UserService {
         preparedStatement.executeUpdate();
         connectionPool.releaseConnection(connection);
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }

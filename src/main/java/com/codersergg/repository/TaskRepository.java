@@ -44,7 +44,7 @@ public class TaskRepository {
           return Optional.empty();
         }
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
@@ -61,7 +61,7 @@ public class TaskRepository {
         preparedStatement.execute();
         connectionPool.releaseConnection(connection);
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
@@ -85,7 +85,7 @@ public class TaskRepository {
         preparedStatement.executeUpdate();
         connectionPool.releaseConnection(connection);
       } catch (PSQLException e) {
-        throw new RuntimeException(e);
+        throw new SQLException(e);
       }
     }
   }
