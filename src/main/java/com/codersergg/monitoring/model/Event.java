@@ -63,7 +63,7 @@ public class Event implements Serializable {
 
   @Override
   public String toString() {
-    return "Metric{" +
+    return "Event{" +
         "dateTime=" + dateTime +
         ", clanId=" + clanId +
         ", amountGoldBeforeRaise=" + amountGoldBeforeRaise +

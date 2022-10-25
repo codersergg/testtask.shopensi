@@ -52,7 +52,7 @@ public class MonitoringKafkaProducer {
         String.valueOf(event.getClanId()), event.toString());
     if (isNoAvailable()) {
       memoryMonitoring.send(event);
-      log.info("the metric: " + event
+      log.info("the event: " + event
           + " was not sent on the first attempt and saved in the backup service");
       log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
     } else {
