@@ -19,22 +19,21 @@ public class JdbcConnectionPool implements ConnectionPool {
   private final Queue<Connection> connectionPool;
   private final Queue<Connection> usedConnections = new ConcurrentLinkedQueue<>();
 
-  public static JdbcConnectionPool create(String url, String user, String password)
-      throws SQLException {
-
-    Queue<Connection> pool = new ConcurrentLinkedQueue<>();
-    for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
-      pool.add(createConnection(url, user, password));
-    }
-    return new JdbcConnectionPool(url, user, password, pool);
-  }
-
   public JdbcConnectionPool(String url, String user, String password,
       Queue<Connection> connectionPool) {
     this.url = url;
     this.user = user;
     this.password = password;
     this.connectionPool = connectionPool;
+  }
+
+  public static JdbcConnectionPool create(String url, String user, String password)
+      throws SQLException {
+    Queue<Connection> pool = new ConcurrentLinkedQueue<>();
+    for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
+      pool.add(createConnection(url, user, password));
+    }
+    return new JdbcConnectionPool(url, user, password, pool);
   }
 
   @Override
