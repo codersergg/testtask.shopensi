@@ -5,13 +5,12 @@ import com.codersergg.monitoring.InMemoryMonitoring;
 import com.codersergg.monitoring.model.Event;
 import java.util.Properties;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
-import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -96,20 +95,18 @@ public class MonitoringKafkaProducer {
 
   public boolean isNoAvailable() {
     try (AdminClient client = KafkaAdminClient.create(properties)) {
-      ListTopicsResult topics = client.listTopics();
-      Set<String> names = topics.names().get();
-      // is topic found?
-      return names.isEmpty();
+      return client.listTopics(new ListTopicsOptions().timeoutMs(300)).listings().get().isEmpty();
     } catch (InterruptedException | ExecutionException e) {
-      // Kafka is not available
       return true;
     }
   }
 
   private void loadingFromMemoryIntoKafka() throws InterruptedException {
     Queue<Event> eventQueue = memoryMonitoring.getEventQueue();
-    if (eventQueue.size() != 0) {
-      executorService.submit(eventQueue::poll);
+    int size = eventQueue.size();
+    if (!isNoAvailable() && size != 0) {
+      eventQueue.forEach(this::send);
+      log.info("loading from memory into Kafka: " + size);
     } else {
       Thread.sleep(10_000);
       loadingFromMemoryIntoKafka();
