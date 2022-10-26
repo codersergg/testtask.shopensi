@@ -56,6 +56,7 @@ class UserAddGoldServiceTest {
     clans.addClan(Clan.builder().name("Clan_1").gold(0).build());
     users.addUser(User.builder().name("User_1").gold(100).build());
     users.addUser(User.builder().name("User_2").gold(100).build());
+    Thread.sleep(50);
 
     for (int i = 0; i < 50; i++) {
       executorService.submit(() -> {

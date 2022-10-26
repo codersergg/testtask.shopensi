@@ -48,6 +48,7 @@ class DeductGoldServiceTest {
   void testDeductGoldFromClanMultiThreads()
       throws InterruptedException, SQLException, TimeoutException {
     clans.addClan(Clan.builder().name("Clan_1").gold(101).build());
+    Thread.sleep(50);
 
     for (int i = 0; i < 50; i++) {
       executorService.submit(() -> {
