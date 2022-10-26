@@ -108,7 +108,9 @@ public class MonitoringKafkaProducer {
     Queue<Event> eventQueue = memoryMonitoring.getEventQueue();
     int size = eventQueue.size();
     if (!isNoAvailable() && size != 0) {
-      eventQueue.forEach(this::send);
+      while (!eventQueue.isEmpty()) {
+        send(eventQueue.poll());
+      }
       log.info("loading from memory into Kafka: " + size);
     } else {
       Thread.sleep(10_000);
