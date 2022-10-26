@@ -2,6 +2,6 @@ package com.codersergg.lock;
 
 public interface LockService {
 
-  Object getLock(Object objToLock);
+  Object getLock(Lockable objToLock);
 
 }

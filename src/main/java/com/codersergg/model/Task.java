@@ -1,11 +1,12 @@
 package com.codersergg.model;
 
+import com.codersergg.lock.Lockable;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class Task {
+public class Task implements Lockable {
 
   private long id;       // id таски
   private String name;   // имя таски

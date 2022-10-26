@@ -7,10 +7,10 @@ import lombok.extern.java.Log;
 @Log
 public class LockServiceImpl implements LockService {
 
-  private final Map<Object, Object> lockMap = new ConcurrentHashMap<>(1000);
+  private final Map<Lockable, Object> lockMap = new ConcurrentHashMap<>(1000);
 
   @Override
-  public Object getLock(Object objToLock) {
+  public Object getLock(Lockable objToLock) {
     Object lock = lockMap.computeIfAbsent(objToLock, k -> new Object());
     log.info("lockMap.size: " + lockMap.size());
     log.info("lock: " + lock);
