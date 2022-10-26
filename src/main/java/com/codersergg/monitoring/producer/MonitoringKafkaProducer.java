@@ -89,6 +89,9 @@ public class MonitoringKafkaProducer {
         log.info("the event: " + event
             + " was not sent on the second attempt and saved in the backup service");
         log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
+      } catch (Exception e) {
+        memoryMonitoring.send(event);
+        log.info("backup service size: " + memoryMonitoring.getEventQueue().size());
       }
     }
   }
