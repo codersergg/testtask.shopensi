@@ -50,4 +50,4 @@ img.5: <i>пример события мониторинга</i>
 1. Покрытие unit tests (до 95% всего кода)<br>
 2. JavaDoc.<br><br>
 
-По все вопросам, предложениям, замечаниям мой Telegram: https://t.me/Sergey_Shopen
+По всем вопросам, предложениям, замечаниям мой Telegram: https://t.me/Sergey_Shopen
