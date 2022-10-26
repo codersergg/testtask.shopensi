@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
 import lombok.extern.java.Log;
 
 // Еще один такой сервис
@@ -35,9 +36,13 @@ public class TaskService { // какой-то сервис с заданиями
   public void completeTask(long clanId, long taskId) throws SQLException, InterruptedException {
 
     Task task;
-    synchronized (lockService.getLock(getTask(taskId).orElseThrow())) {
+    Lock lock = lockService.getLock(getTask(taskId).orElseThrow());
+    lock.lock();
+    try {
       task = taskRepository.getTask(taskId).orElseThrow();
       checkProgress(task.getId());
+    } finally {
+      lock.unlock();
     }
 
     // Эмитация выполнения задания таски пользователем
@@ -48,7 +53,8 @@ public class TaskService { // какой-то сервис с заданиями
       }
     }
 
-    synchronized (lockService.getLock(getTask(taskId).orElseThrow())) {
+    lock.lock();
+    try {
       checkProgress(task.getId());
       int reducedProgress = changeTaskProgress(taskId);
       if (reducedProgress == 0) {
@@ -64,6 +70,8 @@ public class TaskService { // какой-то сервис с заданиями
             .message("taskId: " + taskId)
             .build()));
       }
+    } finally {
+      lock.unlock();
     }
   }
 

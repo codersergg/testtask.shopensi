@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import org.postgresql.util.PSQLException;
 
 public class TaskRepository {
@@ -67,9 +68,13 @@ public class TaskRepository {
   }
 
   public void deductTaskProgress(long taskId) throws SQLException, InterruptedException {
-    synchronized (lockService.getLock(getTask(taskId).orElseThrow())) {
+    Lock lock = lockService.getLock(getTask(taskId).orElseThrow());
+    lock.lock();
+    try {
       Task task = getTask(taskId).orElseThrow();
       updateProgress(taskId, task.getProgress() - 1);
+    } finally {
+      lock.unlock();
     }
   }
 

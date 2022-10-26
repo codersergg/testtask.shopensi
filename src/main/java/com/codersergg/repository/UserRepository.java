@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import lombok.extern.java.Log;
 import org.postgresql.util.PSQLException;
 
@@ -78,10 +79,14 @@ public class UserRepository implements UserService {
    */
   @Override
   public void changeUsersGold(long userId, int gold) throws InterruptedException, SQLException {
-    synchronized (lockService.getLock(getUser(userId).orElseThrow())) {
+    Lock lock = lockService.getLock(getUser(userId).orElseThrow());
+    lock.lock();
+    try {
       User user = getUser(userId).orElseThrow();
       goldSufficiencyCheck(user, user.getGold() + gold);
       updateGold(user, user.getGold() + gold);
+    } finally {
+      lock.unlock();
     }
   }
 

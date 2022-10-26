@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import lombok.extern.java.Log;
 import org.postgresql.util.PSQLException;
 
@@ -79,8 +80,11 @@ public class ClanRepository implements ClanService {
    * @throws InterruptedException
    */
   @Override
-  public GoldValues changeClansGold(long clanId, int gold) throws SQLException, InterruptedException {
-    synchronized (lockService.getLock(getClan(clanId).orElseThrow())) {
+  public GoldValues changeClansGold(long clanId, int gold)
+      throws SQLException, InterruptedException {
+    Lock lock = lockService.getLock(getClan(clanId).orElseThrow());
+    lock.lock();
+    try {
       Clan clan = getClan(clanId).orElseThrow();
       goldSufficiencyCheck(clan, clan.getGold() + gold);
       updateGold(clan, clan.getGold() + gold);
@@ -91,6 +95,8 @@ public class ClanRepository implements ClanService {
           .amountGoldToRaise(gold)
           .amountGoldAfterRaise(clan.getGold() + gold)
           .build();
+    } finally {
+      lock.unlock();
     }
   }
 

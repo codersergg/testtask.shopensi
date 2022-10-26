@@ -1,7 +1,9 @@
 package com.codersergg.lock;
 
+import java.util.concurrent.locks.Lock;
+
 public interface LockService {
 
-  Object getLock(Lockable objToLock);
+  Lock getLock(Lockable objToLock);
 
 }

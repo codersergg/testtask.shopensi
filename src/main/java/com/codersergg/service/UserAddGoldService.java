@@ -7,6 +7,7 @@ import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.monitoring.model.Operation;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
 
 // Так же у нас есть ряд сервисов похожих на эти.
 // Их суть в том, что они добавляют(или уменьшают) золото в казне клана
@@ -30,10 +31,14 @@ public class UserAddGoldService { // пользователь добавляет
   public void addGoldToClan(long userId, long clanId, int gold)
       throws SQLException, InterruptedException {
 
-    synchronized (lockService.getLock(users.getUser(userId).orElseThrow())) {
+    Lock lockUser = lockService.getLock(users.getUser(userId).orElseThrow());
+    lockUser.lock();
+    try {
       users.changeUsersGold(userId, -gold);
 
-      synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
+      Lock lockClan = lockService.getLock(clans.getClan(clanId).orElseThrow());
+      lockClan.lock();
+      try {
         GoldValues goldValues;
         try {
           goldValues = clans.changeClansGold(clanId, gold);
@@ -51,7 +56,11 @@ public class UserAddGoldService { // пользователь добавляет
                 .operation(Operation.ADD)
                 .message("userId: " + userId)
                 .build()));
+      } finally {
+        lockClan.unlock();
       }
+    } finally {
+      lockUser.unlock();
     }
   }
 }

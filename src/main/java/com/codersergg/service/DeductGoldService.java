@@ -2,11 +2,12 @@ package com.codersergg.service;
 
 import com.codersergg.lock.LockService;
 import com.codersergg.monitoring.Monitoring;
-import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.monitoring.model.Event;
+import com.codersergg.monitoring.model.GoldValues;
 import com.codersergg.monitoring.model.Operation;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
 
 public class DeductGoldService {
 
@@ -26,7 +27,9 @@ public class DeductGoldService {
   public void deductGoldFromClan(long clanId, int gold)
       throws SQLException, InterruptedException {
 
-    synchronized (lockService.getLock(clans.getClan(clanId).orElseThrow())) {
+    Lock lock = lockService.getLock(clans.getClan(clanId).orElseThrow());
+    lock.lock();
+    try {
       GoldValues goldValues = clans.changeClansGold(clanId, -gold);
 
       executor.submit(() -> monitoring.send(Event.builder()
@@ -38,6 +41,8 @@ public class DeductGoldService {
           .operation(Operation.DEDUCT)
           .message("deductGoldFromClan")
           .build()));
+    } finally {
+      lock.unlock();
     }
   }
 }
