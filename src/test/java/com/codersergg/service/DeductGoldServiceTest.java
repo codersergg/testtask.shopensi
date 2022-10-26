@@ -14,10 +14,12 @@ import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import lombok.extern.java.Log;
 import net.jodah.concurrentunit.Waiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Log
 class DeductGoldServiceTest {
 
   private static final ExecutorService executorService = AppExecutor.getExecutorService();
@@ -48,11 +50,12 @@ class DeductGoldServiceTest {
   void testDeductGoldFromClanMultiThreads()
       throws InterruptedException, SQLException, TimeoutException {
     clans.addClan(Clan.builder().name("Clan_1").gold(101).build());
-    Thread.sleep(50);
 
     for (int i = 0; i < 50; i++) {
+      int finalI = i;
       executorService.submit(() -> {
         try {
+          log.info("try " + finalI + " add gold to clan");
           deductGoldService.deductGoldFromClan(1L, 2);
           waiter.resume();
         } catch (SQLException | InterruptedException e) {

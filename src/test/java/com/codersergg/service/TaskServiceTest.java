@@ -16,10 +16,12 @@ import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import lombok.extern.java.Log;
 import net.jodah.concurrentunit.Waiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Log
 class TaskServiceTest {
 
   private final Waiter waiter = new Waiter();
@@ -61,11 +63,12 @@ class TaskServiceTest {
         .gold(50)
         .progress(50)
         .build());
-    Thread.sleep(50);
 
     for (int i = 0; i < 50; i++) {
+      int finalI = i;
       executorService.submit(() -> {
         try {
+          log.info("try " + finalI + " complete task");
           taskService.completeTask(1L, 1L);
           waiter.resume();
         } catch (SQLException | InterruptedException e) {
@@ -73,7 +76,7 @@ class TaskServiceTest {
         }
       });
     }
-    waiter.await(20, TimeUnit.SECONDS, 50);
+    waiter.await(10, TimeUnit.SECONDS, 50);
     assertEquals(50, clans.getClan(1L).orElseThrow().getGold());
   }
 
@@ -85,12 +88,13 @@ class TaskServiceTest {
         .gold(50)
         .progress(50)
         .build());
-    Thread.sleep(50);
 
     assertDoesNotThrow(() -> {
       for (int i = 0; i < 51; i++) {
+        int finalI = i;
         executorService.submit(() -> {
           try {
+            log.info("try " + finalI + " complete task");
             taskService.completeTask(1L, 1L);
             waiter.resume();
           } catch (SQLException | InterruptedException e) {
@@ -99,7 +103,7 @@ class TaskServiceTest {
         });
       }
     });
-    waiter.await(20, TimeUnit.SECONDS, 50);
+    waiter.await(10, TimeUnit.SECONDS, 50);
     assertEquals(50, clans.getClan(1L).orElseThrow().getGold());
     assertEquals(50, taskService.getTask(1L).orElseThrow().getGold());
     assertEquals(0, taskService.getTask(1L).orElseThrow().getProgress());

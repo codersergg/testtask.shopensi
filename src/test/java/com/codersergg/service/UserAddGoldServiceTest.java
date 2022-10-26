@@ -16,10 +16,12 @@ import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import lombok.extern.java.Log;
 import net.jodah.concurrentunit.Waiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Log
 class UserAddGoldServiceTest {
 
   private static final ExecutorService executorService = AppExecutor.getExecutorService();
@@ -56,11 +58,12 @@ class UserAddGoldServiceTest {
     clans.addClan(Clan.builder().name("Clan_1").gold(0).build());
     users.addUser(User.builder().name("User_1").gold(100).build());
     users.addUser(User.builder().name("User_2").gold(100).build());
-    Thread.sleep(50);
 
     for (int i = 0; i < 50; i++) {
+      int finalI = i;
       executorService.submit(() -> {
         try {
+          log.info("try " + finalI + " add gold to clan");
           userAddGoldService.addGoldToClan(1L, 1L, 1);
           userAddGoldService.addGoldToClan(2L, 1L, 1);
           waiter.resume();
@@ -70,9 +73,9 @@ class UserAddGoldServiceTest {
       });
     }
     waiter.await(10, TimeUnit.SECONDS, 50);
-    assertEquals(100, clans.getClan(1L).orElseThrow().getGold());
     assertEquals(50, users.getUser(1L).orElseThrow().getGold());
     assertEquals(50, users.getUser(2L).orElseThrow().getGold());
+    assertEquals(100, clans.getClan(1L).orElseThrow().getGold());
   }
 
   @Test
